@@ -1,0 +1,131 @@
+---
+- name: Pgbouncer | Ensure dependencies are installed
+  apt: "name={{ item }} state=installed"
+  with_items:
+    - build-essential
+    - libssl-dev
+    - libevent-dev
+  tags: pgbouncer
+
+- name: Pgbouncer | Ensure pgbouncer group exists"
+  group: name={{ pgbouncer_run_as_group }} state=present
+  tags: pgbouncer
+
+- name: Pgbouncer | Ensure pgbouncer user exists"
+  user:
+    name: "{{ pgbouncer_run_as_user }}"
+    shell: /bin/true
+    group: "{{ pgbouncer_run_as_group }}"
+    home: "{{ pgbouncer_conf_file|dirname }}"
+    createhome: false
+    state: present
+  tags: pgbouncer
+
+- name: Pgbouncer | Ensure conf dir exists
+  file: path={{ pgbouncer_conf_file|dirname }} state=directory mode=0755 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
+  tags: pgbouncer
+
+- name: Pgbouncer | Ensure socket dir exists
+  file: path=/run/pgbouncer state=directory mode=0700 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
+  tags: pgbouncer
+
+- name: Pgbouncer | Get installed version
+  command: pgbouncer -V
+  ignore_errors: true
+  changed_when: false
+  failed_when: false
+  register: pgbouncer_installed_version
+  tags: pgbouncer
+
+- name: Pgbouncer | Force install if version number does not match
+  set_fact:
+    pgbouncer_reinstall_from_source: true
+  when: '(pgbouncer_installed_version|success and (pgbouncer_installed_version.stdout | regex_replace("^.*?([0-9\.]+)$", "\\1") | version_compare(pgbouncer_version, operator="!=")))'
+  tags: pgbouncer
+
+- when: pgbouncer_installed_version|failed or pgbouncer_reinstall_from_source
+  block:
+    - name: Pgbouncer | Download tarball
+      get_url:
+        url: "https://pgbouncer.github.io/downloads/files/{{ pgbouncer_version }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
+        dest: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
+        checksum: "{{ pgbouncer_checksum }}"
+
+    - name: Pgbouncer | Unpack
+      unarchive:
+        src: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
+        dest: "{{ pgbouncer_save_dir }}"
+        creates: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}/README.rst"
+        copy: false
+
+    - name: Pgbouncer | Configure install
+      command: ./configure --prefix=/usr/local --with-libevent=/usr/lib
+      args:
+        chdir: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}"
+        creates: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}/config.log"
+
+    - name: Pgbouncer | Build
+      command: make
+      args:
+        chdir: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}"
+        creates: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}/pgbouncer"
+
+    - name: Pgbouncer | Install
+      command: make install
+      args:
+        chdir: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}"
+  tags: pgbouncer
+
+- name: Pgbouncer | Write configuration file
+  template:
+    src: "templates/pgbouncer.ini.j2"
+    dest: "{{ pgbouncer_conf_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  register: pgbouncer_conf
+  tags: pgbouncer
+
+- name: Pgbouncer | Write auth file
+  template:
+    src: "templates/auth.conf.j2"
+    dest: "{{ pgbouncer_auth_file }}"
+    owner: root
+    group: "{{ pgbouncer_run_as_group }}"
+    mode: 0640
+  register: pgbouncer_auth
+  tags: pgbouncer
+
+- name: Pgbouncer | Write service file
+  template:
+    src: "templates/pgbouncer.service.j2"
+    dest: "/etc/systemd/system/pgbouncer.service"
+    owner: root
+    group: root
+    mode: 0644
+  register: pgbouncer_service
+  tags: pgbouncer
+
+- name: Pgbouncer | Enable and start service
+  systemd:
+    name: pgbouncer.service
+    state: started
+    enabled: true
+  tags: pgbouncer
+
+- name: Pgbouncer | Reload
+  systemd:
+    name: pgbouncer.service
+    state: reloaded
+    daemon_reload: true
+  when: (not pgbouncer_service|changed) and (pgbouncer_conf|changed or pgbouncer_auth|changed)
+  tags: pgbouncer
+
+- name: Pgbouncer | Restart
+  systemd:
+    name: pgbouncer.service
+    state: restarted
+    daemon_reload: true
+  when: pgbouncer_service|changed
+  tags: pgbouncer
+  

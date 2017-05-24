@@ -1,0 +1,34 @@
+[pgbouncer]
+logfile = {{ pgbouncer_logfile }}
+pidfile = {{ pgbouncer_pidfile }}
+listen_addr = {{ pgbouncer_listen_address }}
+listen_port = {{ pgbouncer_port }}
+unix_socket_dir = {{ pgbouncer_socket_dir }}
+user = {{ pgbouncer_run_as_user }}
+auth_file = {{ pgbouncer_auth_file }}
+auth_type = {{ pgbouncer_auth_type }}
+auth_query = {{ pgbouncer_auth_query }}
+pool_mode = {{ pgbouncer_pool_mode }}
+max_client_conn = {{ pgbouncer_max_client_conn }}
+max_db_connections = {{ pgbouncer_max_db_connections }}
+default_pool_size = {{ pgbouncer_default_pool_size }}
+min_pool_size = {{ pgbouncer_min_pool_size }}
+reserve_pool_size = {{ pgbouncer_reserve_pool_size }}
+reserve_pool_timeout = {{ pgbouncer_reserve_pool_timeout }}
+syslog = {{ pgbouncer_syslog }}
+server_reset_query = {{ pgbouncer_server_reset_query }}
+log_connections = {{ pgbouncer_log_connections }}
+log_disconnections = {{ pgbouncer_log_disconnections }}
+stats_period = {{ pgbouncer_stats_period }}
+server_round_robin = {{ pgbouncer_server_round_robin }}
+application_name_add_host = {{ pgbouncer_application_name_add_host }}
+admin_users = {{ pgbouncer_admin_users|join(",") }}
+stats_users = {{ pgbouncer_stats_users|join(",") }}
+
+[databases]
+{% for database in pgbouncer_databases %}
+{% if database.comment is defined %}
+# {{ database.comment }}
+{% endif %}
+{{ database.name }} = host={{ database.host }} dbname={{ database.dbname }} client_encoding={{ database.encoding }} auth_user={{ database.auth_user }}
+{% endfor %}

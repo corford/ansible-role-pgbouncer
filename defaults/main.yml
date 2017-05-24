@@ -1,0 +1,30 @@
+---
+pgbouncer_version: "1.7.2"
+pgbouncer_checksum: "sha256:de36b318fe4a2f20a5f60d1c5ea62c1ca331f6813d2c484866ecb59265a160ba"
+pgbouncer_save_dir: "/usr/local/src"
+pgbouncer_reinstall_from_source: false
+pgbouncer_conf_file: "/etc/pgbouncer/pgbouncer.ini"
+pgbouncer_socket_dir: "/run/pgbouncer"
+pgbouncer_pidfile: "/run/pgbouncer/pgbouncer.pid"
+pgbouncer_logfile: ""
+pgbouncer_run_as_user: "pgbouncer"
+pgbouncer_run_as_group: "pgbouncer"
+pgbouncer_port: 6432
+pgbouncer_listen_address: "*"
+pgbouncer_admin_users: ["postgres"]
+pgbouncer_stats_users: ["postgres"]
+pgbouncer_pool_mode: "transaction"
+pgbouncer_default_client_encoding: "UNICODE"
+pgbouncer_max_client_conn: 800
+pgbouncer_max_db_connections: 300
+pgbouncer_default_pool_size: 20
+pgbouncer_min_pool_size: 0
+pgbouncer_reserve_pool_size: 0
+pgbouncer_reserve_pool_timeout: 0
+pgbouncer_syslog: 1
+pgbouncer_server_reset_query: "DISCARD ALL"
+pgbouncer_log_connections: 0
+pgbouncer_log_disconnections: 0
+pgbouncer_stats_period: 3600
+pgbouncer_server_round_robin: 1
+pgbouncer_application_name_add_host: 1
