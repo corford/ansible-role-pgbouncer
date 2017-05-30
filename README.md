@@ -1,7 +1,7 @@
 # pgbouncer
 Ansible role for pgbouncer
 
-The following vars are not set by the role defaults and should instead be set in a seperate var file (encrypted with Ansible vault or similar):
+The following vars are not set by the role defaults and should be set in a seperate var file (encrypted with Ansible vault or similar):
 
 ```
 pgbouncer_auth_user: "pgbouncer"
