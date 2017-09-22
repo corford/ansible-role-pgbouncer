@@ -7,11 +7,11 @@
     - libevent-dev
   tags: pgbouncer
 
-- name: Pgbouncer | Ensure pgbouncer group exists"
+- name: Pgbouncer | Ensure pgbouncer group exists
   group: name={{ pgbouncer_run_as_group }} state=present
   tags: pgbouncer
 
-- name: Pgbouncer | Ensure pgbouncer user exists"
+- name: Pgbouncer | Ensure pgbouncer user exists
   user:
     name: "{{ pgbouncer_run_as_user }}"
     shell: /bin/true
@@ -33,7 +33,6 @@
   command: pgbouncer -V
   ignore_errors: true
   changed_when: false
-  failed_when: false
   register: pgbouncer_installed_version
   tags: pgbouncer
 
