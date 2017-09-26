@@ -1,7 +1,5 @@
-# pgbouncer
-Ansible role for pgbouncer
-
-The following vars are not set by the role defaults and should be set in a seperate var file (encrypted with Ansible vault or similar):
+# Ansible Role: pgbouncer
+The following vars should be set in a seperate var file and encrypted with Ansible vault (or similar):
 
 ```
 pgbouncer_auth_user: "pgbouncer"
@@ -11,7 +9,7 @@ pgbouncer_auth_file: "/etc/pgbouncer/auth.conf"
 pgbouncer_auth_query: "SELECT uname, phash from user_lookup($1)"
 ```
 
-Note: target database should have a security definer function setup with $pgbouncer_auth_user granted access to invoke it (more info here: https://pgbouncer.github.io/config.html)
+Note: target database must have a security definer function setup with $pgbouncer_auth_user granted access to invoke it (more info here: https://pgbouncer.github.io/config.html)
 
 ```
 CREATE FUNCTION "user_lookup"("i_username" "text", OUT "uname" "text", OUT "phash" "text") RETURNS "record"
@@ -27,7 +25,7 @@ $$;
 GRANT ALL ON FUNCTION "user_lookup"("i_username" "text", OUT "uname" "text", OUT "phash" "text") TO "pgbouncer";
 ```
 
-Database targets for pgbouncer to connect to are specified as a list using the pgbouncer_databases var. Example:
+Databases for pgbouncer to connect to are specified as a list using the pgbouncer_databases var. Example:
 
 ```
 pgbouncer_databases:
