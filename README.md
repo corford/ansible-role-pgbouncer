@@ -1,5 +1,5 @@
 # Ansible Role: pgbouncer
-The following vars should be set in a seperate var file and encrypted with Ansible vault (or similar):
+The following vars should be set in a separate var file and encrypted with Ansible vault (or similar):
 
 ```
 pgbouncer_auth_user: "pgbouncer"
