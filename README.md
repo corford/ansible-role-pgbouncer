@@ -1,5 +1,7 @@
 # Ansible Role: pgbouncer
 
+Ansible role to compile and install pgbouncer (a reverse proxy for postgresql).
+
 The following vars should be set in a separate var file and encrypted with Ansible vault (or similar):
 
 ```
