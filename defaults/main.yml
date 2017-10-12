@@ -1,12 +1,15 @@
 ---
 pgbouncer_version: "1.7.2"
 pgbouncer_checksum: "sha256:de36b318fe4a2f20a5f60d1c5ea62c1ca331f6813d2c484866ecb59265a160ba"
-pgbouncer_save_dir: "/usr/local/src"
-pgbouncer_reinstall_from_source: false
+pgbouncer_url: "https://pgbouncer.github.io/downloads/files/{{ pgbouncer_version }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
+pgbouncer_workspace: "/usr/local/src"
+pgbouncer_reinstall: no
 pgbouncer_conf_file: "/etc/pgbouncer/pgbouncer.ini"
-pgbouncer_socket_dir: "/run/pgbouncer"
-pgbouncer_pidfile: "/run/pgbouncer/pgbouncer.pid"
-pgbouncer_logfile: ""
+pgbouncer_pid_file: "/run/pgbouncer/pgbouncer.pid"
+pgbouncer_log_file: "" # By default, logs go to syslog
+pgbouncer_install_path: "/usr/local"
+pgbouncer_socket_path: "/run/pgbouncer"
+pgbouncer_libevent_path: "/usr/lib" # Leave blank if you want the ./configure script try and find it itself
 pgbouncer_run_as_user: "pgbouncer"
 pgbouncer_run_as_group: "pgbouncer"
 pgbouncer_port: 6432

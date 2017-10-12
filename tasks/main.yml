@@ -1,10 +1,20 @@
 ---
+- name: Pgbouncer | Include OS-specific variables
+  include_vars: "{{ ansible_os_family }}.yml"
+  with_first_found:
+    - "{{ ansible_os_family }}.yml"
+    - "empty.yml"
+  tags: pgbouncer
+
+- name: Pgbouncer | Set dependencies
+  set_fact:
+    pgbouncer_dependencies: "{{ __pgbouncer_dependencies }}"
+  when: pgbouncer_dependencies is not defined
+  tags: pgbouncer
+
 - name: Pgbouncer | Ensure dependencies are installed
-  apt: "name={{ item }} state=installed"
-  with_items:
-    - build-essential
-    - libssl-dev
-    - libevent-dev
+  package: "name={{ item }} state=latest"
+  with_items: "{{ pgbouncer_dependencies }}"
   tags: pgbouncer
 
 - name: Pgbouncer | Ensure pgbouncer group exists
@@ -17,7 +27,7 @@
     shell: /bin/true
     group: "{{ pgbouncer_run_as_group }}"
     home: "{{ pgbouncer_conf_file|dirname }}"
-    createhome: false
+    createhome: no
     state: present
   tags: pgbouncer
 
@@ -25,54 +35,54 @@
   file: path={{ pgbouncer_conf_file|dirname }} state=directory mode=0755 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
   tags: pgbouncer
 
-- name: Pgbouncer | Ensure socket dir exists
-  file: path=/run/pgbouncer state=directory mode=0700 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
+- name: Pgbouncer | Ensure socket path exists
+  file: path={{ pgbouncer_socket_path }} state=directory mode=0700 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
   tags: pgbouncer
 
 - name: Pgbouncer | Get installed version
   command: pgbouncer -V
-  ignore_errors: true
-  changed_when: false
+  ignore_errors: yes
+  changed_when: no
   register: pgbouncer_installed_version
   tags: pgbouncer
 
-- name: Pgbouncer | Force install if version number does not match
-  set_fact:
-    pgbouncer_reinstall_from_source: true
+- set_fact:
+    pgbouncer_reinstall: yes
   when: '(pgbouncer_installed_version|success and (pgbouncer_installed_version.stdout | regex_replace("^.*?([0-9\.]+)$", "\\1") | version_compare(pgbouncer_version, operator="!=")))'
   tags: pgbouncer
 
-- when: pgbouncer_installed_version|failed or pgbouncer_reinstall_from_source
-  block:
+- block:
     - name: Pgbouncer | Download tarball
       get_url:
-        url: "https://pgbouncer.github.io/downloads/files/{{ pgbouncer_version }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
-        dest: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
+        url: "{{ pgbouncer_url }}"
+        dest: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
         checksum: "{{ pgbouncer_checksum }}"
 
     - name: Pgbouncer | Unpack
       unarchive:
-        src: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
-        dest: "{{ pgbouncer_save_dir }}"
-        creates: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}/README.rst"
-        copy: false
+        src: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
+        dest: "{{ pgbouncer_workspace }}"
+        creates: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}/README.rst"
+        copy: no
 
     - name: Pgbouncer | Configure install
-      command: ./configure --prefix=/usr/local --with-libevent=/usr/lib
+      command: ./configure --prefix={{ pgbouncer_install_path }} {{ pgbouncer_libevent_path|ternary('--with-libevent='~pgbouncer_libevent_path,'') }}
       args:
-        chdir: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}"
-        creates: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}/config.log"
+        chdir: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}"
+        creates: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}/config.log"
 
     - name: Pgbouncer | Build
       command: make
       args:
-        chdir: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}"
-        creates: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}/pgbouncer"
+        chdir: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}"
+        creates: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}/pgbouncer"
 
     - name: Pgbouncer | Install
       command: make install
       args:
-        chdir: "{{ pgbouncer_save_dir }}/pgbouncer-{{ pgbouncer_version }}"
+        chdir: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}"
+
+  when: pgbouncer_installed_version|failed or pgbouncer_reinstall        
   tags: pgbouncer
 
 - name: Pgbouncer | Write configuration file
