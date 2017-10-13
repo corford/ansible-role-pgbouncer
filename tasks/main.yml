@@ -119,14 +119,14 @@
   systemd:
     name: pgbouncer.service
     state: started
-    enabled: true
+    enabled: yes
   tags: pgbouncer
 
 - name: Pgbouncer | Reload
   systemd:
     name: pgbouncer.service
     state: reloaded
-    daemon_reload: true
+    daemon_reload: yes
   when: (not pgbouncer_service|changed) and (pgbouncer_conf|changed or pgbouncer_auth|changed)
   tags: pgbouncer
 
@@ -134,7 +134,7 @@
   systemd:
     name: pgbouncer.service
     state: restarted
-    daemon_reload: true
+    daemon_reload: yes
   when: pgbouncer_service|changed
   tags: pgbouncer
   
