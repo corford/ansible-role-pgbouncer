@@ -6,6 +6,8 @@ After=network.target
 [Service]
 User={{ pgbouncer_run_as_user }}
 Group={{ pgbouncer_run_as_group }}
+RuntimeDirectory={{ pgbouncer_socket_path|basename }}
+RuntimeDirectoryMode=2750
 TimeoutSec=10
 ExecStart=/usr/local/bin/pgbouncer -q {{ pgbouncer_conf_file }}
 ExecReload=/bin/kill -HUP $MAINPID

@@ -36,7 +36,7 @@
   tags: pgbouncer
 
 - name: Pgbouncer | Ensure socket path exists
-  file: path={{ pgbouncer_socket_path }} state=directory mode=0700 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
+  file: path={{ pgbouncer_socket_path }} state=directory mode=2750 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
   tags: pgbouncer
 
 - name: Pgbouncer | Get installed version
@@ -137,4 +137,3 @@
     daemon_reload: yes
   when: pgbouncer_service|changed
   tags: pgbouncer
-  
