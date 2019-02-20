@@ -21,20 +21,20 @@ pgbouncer_databases:
 
 ## Dependencies
 
-Target postgres database must have a security definer function setup with $pgbouncer_auth_user granted access to invoke it (more info here: https://pgbouncer.github.io/config.html):
+Target postgres databases must have a security definer function setup with $pgbouncer_auth_user granted access to invoke it (more info here: https://pgbouncer.github.io/config.html):
 
 ```
-CREATE FUNCTION "user_lookup"("i_username" "text", OUT "uname" "text", OUT "phash" "text") RETURNS "record"
-    LANGUAGE "plpgsql" SECURITY DEFINER
-    AS $$
+CREATE SCHEMA pgbouncer AUTHORIZATION pgbouncer;
+CREATE OR REPLACE FUNCTION pgbouncer.user_lookup(in i_username text, out uname text, out phash text)
+RETURNS record AS $$
 BEGIN
     SELECT usename, passwd FROM pg_catalog.pg_shadow
     WHERE usename = i_username INTO uname, phash;
     RETURN;
 END;
-$$;
-
-GRANT ALL ON FUNCTION "user_lookup"("i_username" "text", OUT "uname" "text", OUT "phash" "text") TO "pgbouncer";
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+REVOKE ALL ON FUNCTION pgbouncer.user_lookup(text) FROM public, pgbouncer;
+GRANT EXECUTE ON FUNCTION pgbouncer.user_lookup(text) TO pgbouncer;
 ```
 
 ## License
