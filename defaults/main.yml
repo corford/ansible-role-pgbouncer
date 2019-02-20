@@ -6,16 +6,20 @@ pgbouncer_workspace: "/usr/local/src"
 pgbouncer_reinstall: no
 pgbouncer_conf_file: "/etc/pgbouncer/pgbouncer.ini"
 pgbouncer_pid_file: "/run/pgbouncer/pgbouncer.pid"
-pgbouncer_log_file: "" # By default, logs go to syslog
+pgbouncer_log_file: "" # By default logs go to syslog
 pgbouncer_install_path: "/usr/local"
 pgbouncer_socket_path: "/run/pgbouncer"
 pgbouncer_libevent_path: "/usr/lib" # Leave blank if you want the ./configure script try and find it itself
-pgbouncer_run_as_user: "pgbouncer"
-pgbouncer_run_as_group: "pgbouncer"
 pgbouncer_port: 6432
 pgbouncer_listen_address: "*"
-pgbouncer_admin_users: ["postgres"]
-pgbouncer_stats_users: ["postgres"]
+pgbouncer_run_as_user: "pgbouncer"
+pgbouncer_run_as_group: "pgbouncer"
+pgbouncer_admin_users: ["pgbouncer"]
+pgbouncer_stats_users: ["pgbouncer"]
+pgbouncer_auth_user: "pgbouncer"
+pgbouncer_auth_type: "md5" # Note: at the moment only the md5 auth type is supported
+pgbouncer_auth_file: "/etc/pgbouncer/auth.conf"
+pgbouncer_auth_query: "SELECT uname, phash from user_lookup($1)" # See README for more info
 pgbouncer_pool_mode: "transaction"
 pgbouncer_default_client_encoding: "UNICODE"
 pgbouncer_max_client_conn: 800
