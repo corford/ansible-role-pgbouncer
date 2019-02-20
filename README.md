@@ -34,6 +34,7 @@ BEGIN
 END;
 $$;
 
+REVOKE ALL ON FUNCTION "user_lookup"("i_username" "text", OUT "uname" "text", OUT "phash" "text") FROM PUBLIC;
 GRANT ALL ON FUNCTION "user_lookup"("i_username" "text", OUT "uname" "text", OUT "phash" "text") TO "pgbouncer";
 ```
 
