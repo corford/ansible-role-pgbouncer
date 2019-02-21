@@ -2,7 +2,7 @@
 
 Ansible role to compile and install pgbouncer (a reverse proxy for postgresql).
 
-The password for `$pgbouncer_auth_user` should be set in a separate var file and encrypted with Ansible vault (or similar):
+The password for $pgbouncer_auth_user should be set in a separate var file and encrypted with Ansible vault (or similar):
 
 ```
 pgbouncer_auth_password: "md5 hash of password, prefixed with the string: md5"
