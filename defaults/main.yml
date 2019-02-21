@@ -19,7 +19,7 @@ pgbouncer_stats_users: ["pgbouncer"]
 pgbouncer_auth_user: "pgbouncer"
 pgbouncer_auth_type: "md5" # Note: at the moment only the md5 auth type is supported
 pgbouncer_auth_file: "/etc/pgbouncer/auth.conf"
-pgbouncer_auth_query: "SELECT uname, phash from user_lookup($1)" # See README for more info
+pgbouncer_auth_query: "SELECT uname, phash FROM pgbouncer.user_lookup($1)" # Tailor to your security definer function (see README for more info)
 pgbouncer_pool_mode: "transaction"
 pgbouncer_default_client_encoding: "UNICODE"
 pgbouncer_max_client_conn: 800
