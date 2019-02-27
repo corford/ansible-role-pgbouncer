@@ -12,6 +12,7 @@ TimeoutSec=10
 ExecStart=/usr/local/bin/pgbouncer -q {{ pgbouncer_conf_file }}
 ExecReload=/bin/kill -HUP $MAINPID
 WorkingDirectory={{ pgbouncer_conf_file|dirname }}
+LimitNOFILE={{ pgbouncer_service_ulimit_nofile  }}
 
 [Install]
 WantedBy=multi-user.target
