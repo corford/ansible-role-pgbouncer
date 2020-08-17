@@ -56,7 +56,9 @@
 
 - set_fact:
     pgbouncer_reinstall: yes
-  when: '(pgbouncer_installed_version|success and (pgbouncer_installed_version.stdout | regex_replace("^.*?([0-9\.]+)$", "\\1") | version_compare(pgbouncer_version, operator="!=")))'
+  when:
+    - pgbouncer_installed_version.failed | bool
+    - '(pgbouncer_installed_version.msg | regex_replace("^.*?([0-9\.]+)$", "\\1")) is version(pgbouncer_version, operator="!=")'
   tags: pgbouncer
 
 - block:
@@ -73,8 +75,14 @@
         creates: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}/README.rst"
         copy: no
 
+    - name: Pgbouncer | autogen
+      command: ./autogen.sh
+      args:
+        chdir: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}"
+        creates: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}/autogen"
+
     - name: Pgbouncer | Configure install
-      command: ./configure --prefix={{ pgbouncer_install_path }} {{ pgbouncer_libevent_path|ternary('--with-libevent='~pgbouncer_libevent_path,'') }}
+      command: ./configure --with-systemd --prefix={{ pgbouncer_install_path }}
       args:
         chdir: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}"
         creates: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}/config.log"
@@ -90,7 +98,7 @@
       args:
         chdir: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}"
 
-  when: pgbouncer_installed_version|failed or pgbouncer_reinstall        
+  when: pgbouncer_installed_version.failed|bool or pgbouncer_reinstall
   tags: pgbouncer
 
 - name: Pgbouncer | Write configuration file
@@ -111,6 +119,9 @@
     group: "{{ pgbouncer_run_as_group }}"
     mode: 0640
   register: pgbouncer_auth
+  when:
+    - pgbouncer_auth_user is defined
+    - pgbouncer_auth_password is defined
   tags: pgbouncer
 
 - name: Pgbouncer | Write service file
@@ -135,7 +146,7 @@
     name: pgbouncer.service
     state: reloaded
     daemon_reload: yes
-  when: (not pgbouncer_service|changed) and (pgbouncer_conf|changed or pgbouncer_auth|changed)
+  when: (not pgbouncer_service.changed) and (pgbouncer_conf.changed or pgbouncer_auth.changed)
   tags: pgbouncer
 
 - name: Pgbouncer | Restart
@@ -143,5 +154,5 @@
     name: pgbouncer.service
     state: restarted
     daemon_reload: yes
-  when: pgbouncer_service|changed
+  when: pgbouncer_service.changed
   tags: pgbouncer
