@@ -8,5 +8,4 @@ __pgbouncer_dependencies:
   - automake
   - gcc
   - pkg-config
-  - m4
   - libsystemd-dev
