@@ -1,5 +1,5 @@
 ---
-pgbouncer_version: "1.7.2"
+pgbouncer_version: "1.14.0"
 pgbouncer_checksum: "sha256:de36b318fe4a2f20a5f60d1c5ea62c1ca331f6813d2c484866ecb59265a160ba"
 pgbouncer_url: "https://pgbouncer.github.io/downloads/files/{{ pgbouncer_version }}/pgbouncer-{{ pgbouncer_version }}.tar.gz"
 pgbouncer_workspace: "/usr/local/src"
