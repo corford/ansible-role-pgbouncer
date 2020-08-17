@@ -39,6 +39,14 @@
   file: path={{ pgbouncer_socket_path }} state=directory mode=2750 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
   tags: pgbouncer
 
+- name: Pgbouncer | Ensure log dir exists
+  file: path={{ pgbouncer_log_file|dirname }} state=directory mode=2750 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
+  tags: pgbouncer
+
+- name: Pgbouncer | Ensure log file exists
+  file: path={{ pgbouncer_log_file }} state=touch mode=0755 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
+  tags: pgbouncer
+
 - name: Pgbouncer | Get installed version
   command: pgbouncer -V
   ignore_errors: yes
