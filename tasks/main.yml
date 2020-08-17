@@ -4,22 +4,22 @@
   with_first_found:
     - "{{ ansible_os_family }}.yml"
     - "empty.yml"
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Set dependencies
   set_fact:
     pgbouncer_dependencies: "{{ __pgbouncer_dependencies }}"
   when: pgbouncer_dependencies is not defined
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Ensure dependencies are installed
   package: "name={{ item }} state=latest"
   with_items: "{{ pgbouncer_dependencies }}"
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Ensure pgbouncer group exists
   group: name={{ pgbouncer_run_as_group }} state=present
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Ensure pgbouncer user exists
   user:
@@ -29,37 +29,37 @@
     home: "{{ pgbouncer_conf_file|dirname }}"
     createhome: no
     state: present
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Ensure conf dir exists
   file: path={{ pgbouncer_conf_file|dirname }} state=directory mode=0755 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Ensure socket path exists
   file: path={{ pgbouncer_socket_path }} state=directory mode=2750 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Ensure log dir exists
   file: path={{ pgbouncer_log_file|dirname }} state=directory mode=2750 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Ensure log file exists
   file: path={{ pgbouncer_log_file }} state=touch mode=0755 owner={{ pgbouncer_run_as_user }} group={{ pgbouncer_run_as_group }}
-  tags: pgbouncer
+  tags: pgbouncer-dependencies
 
 - name: Pgbouncer | Get installed version
   command: pgbouncer -V
   ignore_errors: yes
   changed_when: no
   register: pgbouncer_installed_version
-  tags: pgbouncer
+  tags: pgbouncer-install
 
 - set_fact:
     pgbouncer_reinstall: yes
   when:
     - pgbouncer_installed_version.failed | bool
     - '(pgbouncer_installed_version.msg | regex_replace("^.*?([0-9\.]+)$", "\\1")) is version(pgbouncer_version, operator="!=")'
-  tags: pgbouncer
+  tags: pgbouncer-install
 
 - block:
     - name: Pgbouncer | Download tarball
@@ -99,7 +99,7 @@
         chdir: "{{ pgbouncer_workspace }}/pgbouncer-{{ pgbouncer_version }}"
 
   when: pgbouncer_installed_version.failed|bool or pgbouncer_reinstall
-  tags: pgbouncer
+  tags: pgbouncer-install
 
 - name: Pgbouncer | Write configuration file
   template:
@@ -109,7 +109,9 @@
     group: root
     mode: 0644
   register: pgbouncer_conf
-  tags: pgbouncer
+  tags:
+    - pgbouncer-install
+    - pgbouncer-config
 
 - name: Pgbouncer | Write auth file
   template:
@@ -122,7 +124,9 @@
   when:
     - pgbouncer_auth_user is defined
     - pgbouncer_auth_password is defined
-  tags: pgbouncer
+  tags:
+    - pgbouncer-install
+    - pgbouncer-config
 
 - name: Pgbouncer | Write service file
   template:
@@ -132,14 +136,20 @@
     group: root
     mode: 0644
   register: pgbouncer_service
-  tags: pgbouncer
+  tags:
+    - pgbouncer-install
+    - pgbouncer-config
+    - pgbouncer-systemd
 
 - name: Pgbouncer | Enable and start service
   systemd:
     name: pgbouncer.service
     state: started
     enabled: yes
-  tags: pgbouncer
+  tags:
+    - pgbouncer-install
+    - pgbouncer-config
+    - pgbouncer-systemd
 
 - name: Pgbouncer | Reload
   systemd:
@@ -147,7 +157,10 @@
     state: reloaded
     daemon_reload: yes
   when: (not pgbouncer_service.changed) and (pgbouncer_conf.changed or pgbouncer_auth.changed)
-  tags: pgbouncer
+  tags:
+    - pgbouncer-install
+    - pgbouncer-config
+    - pgbouncer-systemd
 
 - name: Pgbouncer | Restart
   systemd:
@@ -155,4 +168,7 @@
     state: restarted
     daemon_reload: yes
   when: pgbouncer_service.changed
-  tags: pgbouncer
+  tags:
+    - pgbouncer-install
+    - pgbouncer-config
+    - pgbouncer-systemd
