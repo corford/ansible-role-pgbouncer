@@ -26,6 +26,7 @@ server_round_robin = {{ pgbouncer_server_round_robin }}
 application_name_add_host = {{ pgbouncer_application_name_add_host }}
 admin_users = {{ pgbouncer_admin_users|join(",") }}
 stats_users = {{ pgbouncer_stats_users|join(",") }}
+query_wait_timeout = {{ pgbouncer_query_wait_timeout }}
 
 [databases]
 {% for database in pgbouncer_databases %}
