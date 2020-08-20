@@ -36,3 +36,4 @@ pgbouncer_stats_period: 3600
 pgbouncer_server_round_robin: 1
 pgbouncer_application_name_add_host: 1
 pgbouncer_service_ulimit_nofile: 10240  # set ulimit -n in systemd config
+pgbouncer_query_wait_timeout: 120
