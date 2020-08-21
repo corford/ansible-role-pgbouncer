@@ -56,9 +56,7 @@
 
 - set_fact:
     pgbouncer_reinstall: yes
-  when:
-    - pgbouncer_installed_version.failed | bool
-    - '(pgbouncer_installed_version.msg | regex_replace("^.*?([0-9\.]+)$", "\\1")) is version(pgbouncer_version, operator="!=")'
+  when: (pgbouncer_installed_version.failed | bool) or (pgbouncer_installed_version.msg | regex_replace("^.*?([0-9\.]+)$", "\\1")) is version(pgbouncer_version, operator="!=")
   tags: pgbouncer-install
 
 - block:
