@@ -3,4 +3,9 @@ __pgbouncer_dependencies:
   - build-essential
   - libssl-dev
   - libevent-dev
-
+  - libtool
+  - make
+  - automake
+  - gcc
+  - pkg-config
+  - libsystemd-dev

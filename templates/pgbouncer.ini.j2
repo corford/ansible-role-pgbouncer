@@ -1,3 +1,5 @@
+#jinja2: trim_blocks: True
+
 [pgbouncer]
 logfile = {{ pgbouncer_log_file }}
 pidfile = {{ pgbouncer_pid_file }}
@@ -30,5 +32,6 @@ stats_users = {{ pgbouncer_stats_users|join(",") }}
 {% if database.comment is defined %}
 # {{ database.comment }}
 {% endif %}
-{{ database.name }} = host={{ database.host }} dbname={{ database.dbname }} client_encoding={{ database.encoding }} auth_user={{ database.auth_user }}
+{{ database.name }} = host={{ database.host }} {%- if database.dbname is defined %} dbname={{ database.dbname }} {%- endif %} {%- if database.client_encoding is defined %} client_encoding={{ database.client_encoding }} {%- endif %} {%- if database.auth_user is defined %} auth_user={{ database.auth_user }} {%- endif %}
+
 {% endfor %}
